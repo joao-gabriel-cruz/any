@@ -10,7 +10,6 @@ program
   .parse(process.argv)
 
 const options = program.opts()
-console.log(options);
 
 Object.keys(options).includes("feature") && createFeature(options.feature)
 Object.keys(options).includes("init") && initStore()

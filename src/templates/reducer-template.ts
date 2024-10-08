@@ -2,8 +2,8 @@ export const templateReducer = (name: string) => {
 
   return `
 import { current, PayloadAction } from "@reduxjs/toolkit";
-import { State${name} } from "../geral.slice";
-import { ReduxState } from "@/models/redux/type";
+import { State${name} } from "../${name}.slice";
+import { ReduxState } from "../../../../@types/redux/reduxe";
 
 export const ${name}Reducer = () => {
   
