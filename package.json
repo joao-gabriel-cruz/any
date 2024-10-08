@@ -1,0 +1,20 @@
+{
+  "name": "any",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "figlet": "^1.7.0",
+    "tsx": "^4.19.1"
+  },
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.7.0",
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.2"
+  }
+}
