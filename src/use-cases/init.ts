@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import { templateMainSlice } from '../templates/store-tamplate';
 import { templateHooks } from '../templates/hooks-tamplate';
 import { textSync } from 'figlet';
+import { templateType } from '../templates/type-template';
+import { templateUtils } from '../templates/utils-template';
 
 
 export const initStore = () => {
@@ -9,7 +11,11 @@ export const initStore = () => {
 
   fs.mkdirSync(`src/store-redux/hooks`, { recursive: true });
   fs.mkdirSync(`src/@types/redux`, { recursive: true });
+  fs.mkdirSync(`src/utils/redux`, { recursive: true });
 
+  fs.writeFileSync(`src/utils/redux/redux.ts`, templateUtils());
+
+  fs.writeFileSync(`src/@types/redux/redux.d.ts`, templateType());
   fs.writeFileSync(`src/store-redux/store.ts`, templateMainSlice());
   fs.writeFileSync(`src/store-redux/hooks/index.ts`, templateHooks());
 }
