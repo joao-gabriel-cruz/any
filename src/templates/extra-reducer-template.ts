@@ -7,7 +7,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export class ${name}ExtraReducers {
   static init = createAsyncThunk("${type}/init", async () => {
-    const result = new Promise<typeof any>((resolve) => {
+    const result = new Promise<any>((resolve) => {
       setTimeout(() => {
         resolve({} as any);
       }, 1000);

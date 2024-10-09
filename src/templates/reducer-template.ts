@@ -2,8 +2,8 @@ export const templateReducer = (name: string) => {
 
   return `
 import { current, PayloadAction } from "@reduxjs/toolkit";
-import { State${name} } from "../${name}.slice";
-import { ReduxState } from "../../../../@types/redux/reduxe";
+import { State${name} } from "../${name.toLocaleLowerCase()}.slice";
+import { ReduxState } from "../../../../@types/redux/redux";
 
 export const ${name}Reducer = () => {
   
@@ -15,7 +15,6 @@ export const ${name}Reducer = () => {
   };
 
   return {
-    set${name},
     rollback${name},
   };
 };

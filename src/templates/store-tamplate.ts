@@ -1,10 +1,10 @@
 export const templateMainSlice = () => `
 import { configureStore } from "@reduxjs/toolkit";
-import { configSlice } from "./feature/config/index.slice";
+import { rootReducer } from "./root-reducer";
 
 export const makeStore = () => {
   return configureStore({
-    reducer: {},
+    reducer: rootReducer,
   });
 };
 
