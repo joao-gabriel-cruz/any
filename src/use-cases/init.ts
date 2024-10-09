@@ -14,9 +14,9 @@ export const initStore = () => {
   fs.mkdirSync(`src/@types/redux`, { recursive: true });
   fs.mkdirSync(`src/utils/redux`, { recursive: true });
 
-  fs.writeFileSync(`src/utils/redux/redux.ts`, templateUtils());
+  fs.writeFileSync(`src/utils/redux/index.ts`, templateUtils());
 
-  fs.writeFileSync(`src/@types/redux/redux.d.ts`, templateType());
+  fs.writeFileSync(`src/@types/redux/index.d.ts`, templateType());
   fs.writeFileSync(`src/store-redux/store.ts`, templateMainSlice());
   fs.writeFileSync(`src/store-redux/root-reducer.ts`, templateRootReducer());
   fs.writeFileSync(`src/store-redux/hooks/index.ts`, templateHooks());

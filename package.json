@@ -1,5 +1,5 @@
 {
-  "name": "any",
+  "name": "@joao-gabriel-cruz/any",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -17,5 +17,12 @@
     "@types/figlet": "^1.7.0",
     "@types/node": "^22.7.5",
     "typescript": "^5.6.2"
-  }
+  },
+  "keywords": [
+    "cli",
+    "npmtool"
+  ],
+  "author": "João Gabriel Pinho Brandão",
+  "repository": "https://github.com/joao-gabriel-cruz/any",
+  "homepage": "https://github.com/joao-gabriel-cruz/any#readme"
 }
