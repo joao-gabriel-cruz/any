@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 import { Command } from "commander"
 import {  createCombine, createCombineAndFeature, createFeature } from "./use-cases/feature"
 import { initStore } from "./use-cases/init"

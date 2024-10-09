@@ -1,10 +1,10 @@
 {
   "name": "@joao-gabriel-cruz/any",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "dist/main.js",
   "license": "MIT",
   "bin": {
-    "dirmanager": "./dist/main.js"
+    "any": "./dist/main.js"
   },
   "dependencies": {
     "commander": "^12.1.0",
