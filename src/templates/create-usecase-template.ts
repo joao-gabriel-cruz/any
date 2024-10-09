@@ -1,5 +1,8 @@
-export const templateCreateUseCase = (nameUsecase: string, nameFeature: string) => `
-import { ReduxState } from "../../../../@types/redux/redux";
+export const templateCreateUseCase = (nameUsecase: string, nameFeature: string, combine?: boolean) => {
+  const pathType = combine ? "../../../../../@types/redux/redux" : "../../../@types/redux/redux"
+  
+  return `
+import { ReduxState } from "${pathType}";
 import { ${nameFeature}UseCases } from ".";
 import { State${nameFeature} } from "../${nameFeature.toLocaleLowerCase()}.slice";
 
@@ -11,4 +14,4 @@ export class ${nameUsecase + nameFeature}UseCases extends ${nameFeature}UseCases
   }
 }
 
-`;
+`};

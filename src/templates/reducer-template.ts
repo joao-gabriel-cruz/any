@@ -1,9 +1,10 @@
-export const templateReducer = (name: string) => {
+export const templateReducer = (name: string, combine?: boolean) => {
+  const pathType = combine ? "../../../../../@types/redux/redux" : "../../../@types/redux/redux"
 
   return `
 import { current, PayloadAction } from "@reduxjs/toolkit";
 import { State${name} } from "../${name.toLocaleLowerCase()}.slice";
-import { ReduxState } from "../../../../@types/redux/redux";
+import { ReduxState } from "${pathType}";
 
 export const ${name}Reducer = () => {
   

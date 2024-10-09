@@ -1,9 +1,12 @@
-export const templateIndexUseCase = (name: string) => `
+export const templateIndexUseCase = (name: string, combine?: boolean) => {
+  const pathType = combine ? "../../../../../@types/redux/redux" : "../../../@types/redux/redux"
+  
+  return`
 import {
   ActionExtraReducer,
   ReduxState,
   ReduxUseCases,
-} from "../../../../@types/redux/redux";
+} from "${pathType}";
 
 export class ${name}UseCases implements ReduxUseCases {
   fulfilled(state: ReduxState<any>, action: ActionExtraReducer<any>): void {
@@ -19,4 +22,4 @@ export class ${name}UseCases implements ReduxUseCases {
   }
 }
 
-`
+`}

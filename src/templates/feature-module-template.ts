@@ -1,11 +1,12 @@
-export const templateFeatureModule = (name: string) => {
-
+export const templateFeatureModule = (name: string, combine?: boolean) => {
+  const pathType = combine ? "../../../../@types/redux/redux" : "../../../@types/redux/redux"
+  const pathUtil = combine ? "../../../../utils/redux/redux" : "../../../utils/redux/redux"
 
   return `
-import { ReduxModule } from "../../../@types/redux/redux";
+import { ReduxModule } from "${pathType}";
 import { Save${name}UseCases } from "./use-cases/save.usecases";
 import { Init${name}UseCases } from "../${name.toLocaleLowerCase()}/use-cases/init.usecases";
-import { combineUseCasesWithExtraReducers } from "../../../utils/redux/redux";
+import { combineUseCasesWithExtraReducers } from "${pathUtil}";
 import { ${name}ExtraReducers } from "./reducer/${name.toLocaleLowerCase()}-extra.reducer";
 
 export const init${name} = ${name}ExtraReducers.init;

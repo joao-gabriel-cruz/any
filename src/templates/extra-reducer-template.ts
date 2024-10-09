@@ -1,5 +1,4 @@
-export const templateExtraReducer = (name: string) =>  {
-
+export const templateExtraReducer = (name: string, combine?: boolean) =>  {
   const type = name.charAt(0).toLowerCase() + name.slice(1).toLocaleLowerCase();
 
   return `
