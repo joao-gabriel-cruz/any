@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.templateHooks = void 0;
+const templateHooks = () => `
+import { useDispatch, useSelector, useStore } from "react-redux";
+import type { RootState, AppDispatch, AppStore } from "../store";
+
+// Use throughout your app instead of plain "useDispatch" and "useSelector"
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+export const useAppSelector = useSelector.withTypes<RootState>();
+export const useAppStore = useStore.withTypes<AppStore>();
+
+`;
+exports.templateHooks = templateHooks;
+//# sourceMappingURL=hooks-tamplate.js.map

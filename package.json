@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "bin": {
+    "dirmanager": "./dist/main.js"
+  },
   "dependencies": {
     "commander": "^12.1.0",
     "figlet": "^1.7.0",

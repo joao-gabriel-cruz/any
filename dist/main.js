@@ -1,11 +1,51 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const figlet_1 = require("figlet");
 const commander_1 = require("commander");
-const program = new commander_1.Command();
-console.log((0, figlet_1.textSync)("Any"));
-program
-    .option("-n, --name <name>", "Your name")
-    .parse(process.argv);
-const options = program.opts();
+const feature_1 = require("./use-cases/feature");
+const init_1 = require("./use-cases/init");
+const fs_1 = __importDefault(require("fs"));
+function main() {
+    const program = new commander_1.Command();
+    program
+        .option("-f, --feature <feature>", "new feature")
+        .option("-i, --init", "init project")
+        .option("-c, --combine <combine>", "init project")
+        .parse(process.argv);
+    const options = program.opts();
+    console.log(options);
+    if (options.init) {
+        (0, init_1.initStore)();
+        return;
+    }
+    if (!options.feature && options.combine) {
+        const existStore = fs_1.default.existsSync(`src/store-redux`);
+        if (!existStore) {
+            console.error(`Store-redux does not exist`);
+            return;
+        }
+        (0, feature_1.createCombine)(options.combine);
+        return;
+    }
+    if (options.feature && options.combine) {
+        const existStore = fs_1.default.existsSync(`src/store-redux`);
+        if (!existStore) {
+            console.error(`Store-redux does not exist run init command`);
+            return;
+        }
+        (0, feature_1.createCombineAndFeature)(options.feature, options.combine);
+        return;
+    }
+    if (options.feature) {
+        const existStore = fs_1.default.existsSync(`src/store-redux`);
+        if (!existStore) {
+            console.error(`Store-redux does not exist run init command`);
+            return;
+        }
+        (0, feature_1.createFeature)(options.feature);
+    }
+}
+main();
 //# sourceMappingURL=main.js.map
