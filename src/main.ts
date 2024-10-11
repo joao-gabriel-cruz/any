@@ -22,11 +22,11 @@ function main() {
   }
 
   if (!options.feature && options.combine) {
-    const existStore = fs.existsSync(`src/store-redux`);
+    const existStore = fs.existsSync(`src/redux-store`);
 
 
     if (!existStore) {
-      console.error(`Store-redux does not exist`);
+      console.error(`redux-store does not exist`);
       return
     }
 
@@ -35,11 +35,11 @@ function main() {
   }
 
   if (options.feature && options.combine) {
-    const existStore = fs.existsSync(`src/store-redux`);
+    const existStore = fs.existsSync(`src/redux-store`);
 
 
     if (!existStore) {
-      console.error(`Store-redux does not exist run init command`);
+      console.error(`redux-store does not exist run init command`);
       return
     }
     createCombineAndFeature(options.feature, options.combine)
@@ -47,11 +47,11 @@ function main() {
   }
 
   if (options.feature) {
-    const existStore = fs.existsSync(`src/store-redux`);
+    const existStore = fs.existsSync(`src/redux-store`);
 
 
     if (!existStore) {
-      console.error(`Store-redux does not exist run init command`);
+      console.error(`redux-store does not exist run init command`);
       return
     }
     
