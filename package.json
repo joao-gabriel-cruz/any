@@ -1,6 +1,6 @@
 {
   "name": "@joao-gabriel-cruz/any",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "dist/main.js",
   "license": "MIT",
   "bin": {
