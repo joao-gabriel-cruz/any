@@ -14,9 +14,7 @@ const project = new Project({
 
 
 export const createCombine = (combineRoot: string) => {
- 
   
- 
   fs.mkdirSync(`src/redux-store/features/${combineRoot}`,{ recursive: true });
   fs.writeFileSync(`src/redux-store/features/${combineRoot}/${combineRoot}.slice.ts`, "");
   const combineFiles = project.addSourceFileAtPath(`src/redux-store/features/${combineRoot}/${combineRoot}.slice.ts`);
@@ -75,8 +73,8 @@ export const createCombineAndFeature = (name: string, combineRoot: string) => {
   const rootReducerFiles = project.addSourceFileAtPath("src/redux-store/root-reducer.ts");
 
   rootReducerFiles.addImportDeclaration({
-    moduleSpecifier: `./features/${combineRoot}/${name}/${name}.slice`,
-    namedImports: [`${name}Slice`]
+    moduleSpecifier: `./features/${combineRoot}/${combineRoot}.slice`,
+    namedImports: [`${combineRoot}Slice`]
   });
 
   const variebleRoot = rootReducerFiles.getVariableDeclarationOrThrow("rootReducer");
@@ -84,8 +82,8 @@ export const createCombineAndFeature = (name: string, combineRoot: string) => {
   const objectLiteral = variebleRoot.getInitializerIfKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression);
 
   objectLiteral.addPropertyAssignment({
-    name: name,
-    initializer: `${name}Slice.reducer`
+    name: combineRoot,
+    initializer: `${combineRoot}Slice`
   })
 
   const combineSliceFiles = project.addSourceFileAtPath(`src/redux-store/features/${combineRoot}/${combineRoot}.slice.ts`);

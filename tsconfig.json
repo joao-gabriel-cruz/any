@@ -8,6 +8,7 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
   },
   "include": [
     "./src/**/*.ts",

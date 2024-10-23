@@ -1,5 +1,5 @@
 node_modules
-store-redux
+redux-store
 @types
 utils
 jspm_packages/

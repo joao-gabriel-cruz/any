@@ -5,11 +5,12 @@ import { textSync } from 'figlet';
 import { templateType } from '../templates/type-template';
 import { templateUtils } from '../templates/utils-template';
 import { templateRootReducer } from '../templates/root-reducer';
+import inquirer from 'inquirer';
 
-
-export const initStore = () => {
+export const initStore = async () => {
   console.log(textSync("Any"))
 
+ 
   fs.mkdirSync(`src/redux-store/hooks`, { recursive: true });
   fs.mkdirSync(`src/@types/redux`, { recursive: true });
   fs.mkdirSync(`src/utils/redux`, { recursive: true });
@@ -21,3 +22,19 @@ export const initStore = () => {
   fs.writeFileSync(`src/redux-store/root-reducer.ts`, templateRootReducer());
   fs.writeFileSync(`src/redux-store/hooks/index.ts`, templateHooks());
 }
+
+//   const result = await inquirer.prompt([
+//     {
+//       type: "list",
+//       name: "type",
+//       message: "What type project? \n",
+//       choices: ["Nextjs", "Reactjs"]
+//     }
+//   ])
+
+ 
+//   fs.writeFileSync(`any.json`, `
+// {
+//   "type_project": "${result.type}"
+// }    
+// `);

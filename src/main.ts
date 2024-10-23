@@ -3,6 +3,7 @@ import { Command } from "commander"
 import {  createCombine, createCombineAndFeature, createFeature } from "./use-cases/feature"
 import { initStore } from "./use-cases/init"
 import fs from "fs"
+import { getVersion } from "./use-cases/configs"
 
 function main() {
   const program = new Command()
@@ -10,11 +11,11 @@ function main() {
   program
     .option("-f, --feature <feature>", "new feature")
     .option("-i, --init", "init project")
-    .option("-c, --combine <combine>", "init project")
+    .option("-c, --combine <combine>", "combine feature")
+    .option("-v, --version ", "version project") 
     .parse(process.argv)
 
   const options = program.opts()
-  console.log(options);
 
   if (options.init) {
     initStore()
@@ -57,6 +58,14 @@ function main() {
     
     createFeature(options.feature)
   }
+
+  if (options.version) {
+    getVersion()
+  }
+
+
 }
+
+
 
 main()

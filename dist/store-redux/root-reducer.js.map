@@ -1,0 +1,1 @@
+{"version":3,"file":"root-reducer.js","sourceRoot":"","sources":["../../src/store-redux/root-reducer.ts"],"names":[],"mappings":";;;AAAA,8DAA0D;AAC1D,kEAA8D;AAE9D,qEAAiE;AAEpD,QAAA,WAAW,GAAG;IACvB,KAAK,EAAE,wBAAU,CAAC,OAAO;IACzB,IAAI,EAAE,sBAAS,CAAC,OAAO;IACvB,IAAI,EAAE,sBAAS,CAAC,OAAO;IACvB,KAAK,EAAE,wBAAU,CAAC,OAAO;CAC5B,CAAA"}
