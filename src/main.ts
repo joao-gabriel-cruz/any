@@ -5,7 +5,7 @@ import { initStore } from "./use-cases/init"
 import fs from "fs"
 import { getVersion } from "./use-cases/configs"
 
-function main() {
+export function main() {
   const program = new Command()
 
   program

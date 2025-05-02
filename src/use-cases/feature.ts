@@ -14,8 +14,8 @@ const project = new Project({
 
 
 export const createCombine = (combineRoot: string) => {
-  
-  fs.mkdirSync(`src/redux-store/features/${combineRoot}`,{ recursive: true });
+
+  fs.mkdirSync(`src/redux-store/features/${combineRoot}`, { recursive: true });
   fs.writeFileSync(`src/redux-store/features/${combineRoot}/${combineRoot}.slice.ts`, "");
   const combineFiles = project.addSourceFileAtPath(`src/redux-store/features/${combineRoot}/${combineRoot}.slice.ts`);
 
@@ -23,6 +23,31 @@ export const createCombine = (combineRoot: string) => {
     moduleSpecifier: `@reduxjs/toolkit`,
     namedImports: ["combineSlices"]
   });
+
+  const rootReducerFiles = project.addSourceFileAtPath("src/redux-store/root-reducer.ts");
+
+
+  const variebleRoot = rootReducerFiles.getVariableDeclarationOrThrow("propsCombineReducer");
+
+  // Verifica se o combineRoot já existe no propsCombineReducer
+  const objectLiteral = variebleRoot.getInitializerIfKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression);
+  const existCombine = objectLiteral.getChildren().find(child => child.getKind() === ts.SyntaxKind.PropertyAssignment && child.getText() === combineRoot);
+
+  if (!existCombine) {
+    console.error(`Combine ${combineRoot} already exists in propsCombineReducer`);
+
+    rootReducerFiles.addImportDeclaration({
+      moduleSpecifier: `@/features/${combineRoot}/${combineRoot}.slice`,
+      namedImports: [`${combineRoot}Slice`]
+    });
+
+
+    objectLiteral.addPropertyAssignment({
+      name: combineRoot,
+      initializer: `${combineRoot}Slice`
+    })
+  }
+
 
   combineFiles.addVariableStatement({
     declarationKind: VariableDeclarationKind.Const,
@@ -34,7 +59,7 @@ export const createCombine = (combineRoot: string) => {
   });
 
   combineFiles.saveSync();
-  
+  rootReducerFiles.saveSync();
 }
 
 
@@ -46,7 +71,7 @@ export const createCombineAndFeature = (name: string, combineRoot: string) => {
   const existCombine = fs.existsSync(`src/redux-store/features/${combineRoot}`);
   const existFeature = fs.existsSync(`src/redux-store/features/${combineRoot}/${name}`);
 
-  
+
   if (existFeature) {
     console.error(`Feature ${name} already exists in ${combineRoot}`);
     return;
@@ -56,9 +81,9 @@ export const createCombineAndFeature = (name: string, combineRoot: string) => {
     createCombine(combineRoot);
   }
 
-  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}/use-cases`,{ recursive: true });
-  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}/reducer`,{ recursive: true });
-  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}`,{ recursive: true });
+  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}/use-cases`, { recursive: true });
+  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}/reducer`, { recursive: true });
+  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}`, { recursive: true });
 
   fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/${name}.slice.ts`, templateSlice(upName, true));
   fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/${name}.module.ts`, templateFeatureModule(upName, true));
@@ -72,19 +97,24 @@ export const createCombineAndFeature = (name: string, combineRoot: string) => {
 
   const rootReducerFiles = project.addSourceFileAtPath("src/redux-store/root-reducer.ts");
 
-  rootReducerFiles.addImportDeclaration({
-    moduleSpecifier: `./features/${combineRoot}/${combineRoot}.slice`,
-    namedImports: [`${combineRoot}Slice`]
-  });
-
-  const variebleRoot = rootReducerFiles.getVariableDeclarationOrThrow("rootReducer");
+  const variebleRoot = rootReducerFiles.getVariableDeclarationOrThrow("propsCombineReducer");
 
   const objectLiteral = variebleRoot.getInitializerIfKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression);
 
-  objectLiteral.addPropertyAssignment({
-    name: combineRoot,
-    initializer: `${combineRoot}Slice`
-  })
+  const existCombineFeature = objectLiteral.getChildren().find(child => child.getText().includes(combineRoot));
+
+  if (!existCombineFeature) {
+    rootReducerFiles.addImportDeclaration({
+      moduleSpecifier: `@/features/${combineRoot}/${combineRoot}.slice`,
+      namedImports: [`${combineRoot}Slice`]
+    });
+
+    objectLiteral.addPropertyAssignment({
+      name: combineRoot,
+      initializer: `${combineRoot}Slice`
+    })
+  }
+
 
   const combineSliceFiles = project.addSourceFileAtPath(`src/redux-store/features/${combineRoot}/${combineRoot}.slice.ts`);
 
@@ -97,7 +127,7 @@ export const createCombineAndFeature = (name: string, combineRoot: string) => {
 
   const objectLiteralCombine = variebleCombine.getInitializerIfKindOrThrow(ts.SyntaxKind.CallExpression);
 
-  
+
   objectLiteralCombine.addArgument(`${name}Slice`);
 
   combineSliceFiles.saveSync();
@@ -116,9 +146,9 @@ export const createFeature = (name: string) => {
   }
 
   console.log(`Creating feature ${name}`);
-  fs.mkdirSync(`src/redux-store/features/${name}/use-cases`,{ recursive: true });
-  fs.mkdirSync(`src/redux-store/features/${name}/reducer`,{ recursive: true });
-  fs.mkdirSync(`src/redux-store/features/${name}`,{ recursive: true });
+  fs.mkdirSync(`src/redux-store/features/${name}/use-cases`, { recursive: true });
+  fs.mkdirSync(`src/redux-store/features/${name}/reducer`, { recursive: true });
+  fs.mkdirSync(`src/redux-store/features/${name}`, { recursive: true });
 
   fs.writeFileSync(`src/redux-store/features/${name}/${name}.slice.ts`, templateSlice(upName));
   fs.writeFileSync(`src/redux-store/features/${name}/${name}.module.ts`, templateFeatureModule(upName));
@@ -133,11 +163,11 @@ export const createFeature = (name: string) => {
   const sourceFiles = project.addSourceFileAtPath("src/redux-store/root-reducer.ts");
 
   sourceFiles.addImportDeclaration({
-    moduleSpecifier: `./features/${name}/${name}.slice`,
+    moduleSpecifier: `@/features/${name}/${name}.slice`,
     namedImports: [`${name}Slice`]
   });
 
-  const variebleRoot = sourceFiles.getVariableDeclarationOrThrow("rootReducer");
+  const variebleRoot = sourceFiles.getVariableDeclarationOrThrow("propsCombineReducer");
 
   const objectLiteral = variebleRoot.getInitializerIfKindOrThrow(ts.SyntaxKind.ObjectLiteralExpression);
 

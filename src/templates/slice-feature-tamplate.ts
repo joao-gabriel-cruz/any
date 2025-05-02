@@ -1,10 +1,9 @@
 export const templateSlice = (name: string, combine?: boolean) =>  {
-const pathType = combine ? "../../../../@types/redux/redux" : "../../../@types/redux/redux"
   return `
 import { createSlice } from "@reduxjs/toolkit";
 import { ${name}Module } from "./${name.toLocaleLowerCase()}.module";
 import { ${name}Reducer } from "./reducer/${name.toLocaleLowerCase()}.reducer";
-import { ReduxState } from "${pathType}";
+import { ReduxState } from "@/@types/redux/redux";
 
 export type State${name} = any
 

@@ -1,32 +1,25 @@
 {
-  "name": "@joao-gabriel-cruz/any",
-  "version": "0.0.3",
-  "main": "dist/main.js",
-  "license": "MIT",
-  "bin": {
-    "any": "./dist/main.js"
+  "name": "any",
+  "version": "0.0.4",
+  "description": "CLI tool for Redux store management",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
-    "commander": "^12.1.0",
+    "@reduxjs/toolkit": "^2.2.1",
+    "commander": "^11.1.0",
     "figlet": "^1.7.0",
-    "inquirer": "^12.0.0",
-    "ts-morph": "^24.0.0",
-    "tsx": "^4.19.1"
-  },
-  "scripts": {
-    "dev": "tsx src/main.ts",
-    "build": "tsc"
+    "react-redux": "^9.1.0",
+    "ts-morph": "^22.0.0"
   },
   "devDependencies": {
     "@types/figlet": "^1.7.0",
-    "@types/node": "^22.7.5",
-    "typescript": "^5.6.2"
-  },
-  "keywords": [
-    "cli",
-    "npmtool"
-  ],
-  "author": "João Gabriel Pinho Brandão",
-  "repository": "https://github.com/joao-gabriel-cruz/any",
-  "homepage": "https://github.com/joao-gabriel-cruz/any#readme"
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.3"
+  }
 }
