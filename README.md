@@ -58,6 +58,69 @@ any --version
 any -v
 ```
 
+## 📁 Estrutura Gerada pela CLI
+
+Quando você inicializa um novo projeto ou cria uma feature, a CLI gera a seguinte estrutura:
+
+### Estrutura Inicial do Projeto
+```
+src/
+├── @types/
+│   └── redux.d.ts
+├── redux-store/
+│   ├── features/
+│   │   └── example/
+│   │       ├── actions.ts
+│   │       ├── reducer.ts
+│   │       ├── selectors.ts
+│   │       └── types.ts
+│   ├── hooks/
+│   │   └── useRedux.ts
+│   ├── root-reducer.ts
+│   └── store.ts
+└── utils/
+    └── redux-utils.ts
+```
+
+### Estrutura de uma Feature
+Quando você cria uma nova feature, a CLI gera:
+```
+src/redux-store/features/<nome-da-feature>/
+├── actions.ts      # Ações da feature
+├── reducer.ts      # Reducer da feature
+├── selectors.ts    # Selectors da feature
+└── types.ts        # Tipos TypeScript da feature
+```
+
+## 📁 Estrutura de pastas do projeto gerado
+
+```
+src
+├── @types
+│   └── redux.d.ts
+├── store-redux
+│   ├── hooks
+│   │   └── index.ts
+│   ├── features
+│   │   ├── theme
+│   │   │   ├── theme-slice.ts
+│   │   │   ├── theme.module.ts
+│   │   │   ├── use-cases
+│   │   │   │    ├ index.ts
+│   │   │   │    ├ init.usecases.ts
+│   │   │   │    ├ save.usecases.ts
+│   │   │   │    ...
+│   │   │   └── reducer
+│   │   │       ├── theme-extra-reducer.ts
+│   │   │       └── theme-reducer.ts
+│   │
+│   ├── root-reducer.ts
+│   └── store.ts
+└── utils
+    └── redux
+        └── index.ts
+```
+
 ## 📁 Estrutura do Projeto
 
 ```
