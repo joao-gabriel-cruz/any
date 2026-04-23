@@ -2,6 +2,7 @@ node_modules
 redux-store
 @types
 utils
+.test-tmp
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)

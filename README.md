@@ -1,156 +1,121 @@
 # Any
 
-Uma CLI poderosa para gerenciar configurações e features do Redux em projetos TypeScript.
+CLI para gerar e evoluir a camada Redux (slices, reducers, use-cases e thunks) em projetos TypeScript — usando [ts-morph](https://ts-morph.com/) para manipular AST em vez de templates de string.
 
-## 🚀 Funcionalidades
+> Por que ts-morph? Gerar código por AST evita bugs de indentação, imports quebrados e strings fora de sincronia com a tipagem. Cada comando do `any` abre o `tsconfig.json` do seu projeto, modifica arquivos existentes (ex.: o `root-reducer`) e escreve os novos — tudo respeitando o AST do TypeScript.
 
-- Inicializar estrutura do Redux store
-- Criar novas features do Redux
-- Combinar múltiplas features
-- Gerar tipos TypeScript e utilitários
-- Geração de código programática usando ts-morph
+## Sumário
 
-## 📦 Instalação
+- [Instalação](#instalação)
+- [Uso rápido](#uso-rápido)
+- [Comandos](#comandos)
+- [Convenções do código gerado](#convenções-do-código-gerado)
+- [Estrutura do projeto gerado](#estrutura-do-projeto-gerado)
+- [Desenvolvimento](#desenvolvimento)
+
+## Instalação
 
 ```bash
 npm install -g any
+# ou, sem instalar global, durante o desenvolvimento:
+yarn dev -- --init
 ```
 
-## 🛠️ Como Usar
+Requisitos: Node.js ≥ 18 e um projeto com `tsconfig.json` na raiz.
 
-### Inicializar Projeto
-Inicializar uma nova estrutura de Redux store no seu projeto:
+## Uso rápido
+
 ```bash
+# 1. No seu projeto TS, inicialize o scaffold Redux
 any --init
-# ou
-any -i
+
+# 2. Crie uma feature simples
+any --feature profile
+
+# 3. Crie uma feature dentro de um grupo combinado
+any --feature profile --combine user
+
+# 4. Adicione um thunk a uma feature existente
+any --thunk loadProfile --feature profile
 ```
 
-### Criar uma Nova Feature
-Criar uma nova feature do Redux com todos os arquivos necessários:
-```bash
-any --feature <nome-da-feature>
-# ou
-any -f <nome-da-feature>
+## Comandos
+
+| Comando | Flag curta | O que faz |
+|---|---|---|
+| `any --init` | `-i` | Cria o scaffold Redux (`store`, `root-reducer`, `hooks`, tipos e utils) e injeta o alias `@/*` no `tsconfig.json`. |
+| `any --feature <name>` | `-f` | Cria uma feature isolada: `slice`, `module`, `reducer`, `extra-reducer` e use-cases (`init` / `save`). Registra o slice no `root-reducer`. |
+| `any --combine <name>` | `-c` | Cria um grupo `combineSlices` (feature-pai que agrupa outras). |
+| `any --feature <name> --combine <group>` | `-f … -c …` | Cria a feature dentro do grupo combinado e faz o wiring nos dois níveis. |
+| `any --thunk <name> --feature <feat>` | `-t … -f …` | Adiciona um `createAsyncThunk` + use-case à feature existente. Aceita `--combine` se a feature está em um grupo. |
+| `any --version` | `-v` | Mostra a versão. |
+
+Todos os comandos que tocam a store exigem que `any --init` tenha sido rodado antes (a CLI verifica a existência de `src/redux-store`).
+
+## Convenções do código gerado
+
+Cada feature gerada segue este formato:
+
+```
+src/redux-store/features/<feature>/
+├── <feature>.slice.ts       # createSlice + StateX + initialStateX + actions
+├── <feature>.module.ts      # combineUseCasesWithExtraReducers + builder addCase
+├── use-cases/
+│   ├── index.ts             # classe base <Feature>UseCases implements ReduxUseCases
+│   ├── init.usecases.ts     # Init<Feature>UseCases extends <Feature>UseCases
+│   └── save.usecases.ts     # Save<Feature>UseCases extends <Feature>UseCases
+└── reducer/
+    ├── <feature>.reducer.ts        # reducers síncronos (rollback, …)
+    └── <feature>-extra.reducer.ts  # createAsyncThunk estáticos (init/save)
 ```
 
-### Combinar Features
-Combinar múltiplas features em uma única store:
-```bash
-any --combine <nome-da-feature>
-# ou
-any -c <nome-da-feature>
-```
+O padrão separa **use-cases** (o que acontece no `fulfilled`/`pending`/`rejected`) de **extra reducers** (os `createAsyncThunk` em si), e o `module.ts` costura os dois via `combineUseCasesWithExtraReducers` (utilitário gerado pelo `--init`).
 
-### Criar e Combinar Feature
-Criar uma nova feature e combiná-la em um único comando:
-```bash
-any --feature <nome-da-feature> --combine <nome-da-feature>
-# ou
-any -f <nome-da-feature> -c <nome-da-feature>
-```
+## Estrutura do projeto gerado
 
-### Verificar Versão
-Verificar a versão atual da CLI:
-```bash
-any --version
-# ou
-any -v
-```
+Após `any --init` seguido de `any --feature profile --combine user`:
 
-## 📁 Estrutura Gerada pela CLI
-
-Quando você inicializa um novo projeto ou cria uma feature, a CLI gera a seguinte estrutura:
-
-### Estrutura Inicial do Projeto
 ```
 src/
-├── @types/
-│   └── redux.d.ts
+├── @types/redux/
+│   └── index.d.ts           # ReduxState, ReduxUseCases, ActionExtraReducer, ReduxModule
 ├── redux-store/
-│   ├── features/
-│   │   └── example/
-│   │       ├── actions.ts
-│   │       ├── reducer.ts
-│   │       ├── selectors.ts
-│   │       └── types.ts
-│   ├── hooks/
-│   │   └── useRedux.ts
-│   ├── root-reducer.ts
-│   └── store.ts
-└── utils/
-    └── redux-utils.ts
+│   ├── store.ts             # configureStore(rootReducer)
+│   ├── root-reducer.ts      # combineReducers(propsCombineReducer)
+│   ├── hooks/index.ts       # useAppDispatch, useAppSelector
+│   └── features/
+│       └── user/
+│           ├── user.slice.ts          # combineSlices(profileSlice, …)
+│           └── profile/
+│               ├── profile.slice.ts
+│               ├── profile.module.ts
+│               ├── use-cases/
+│               └── reducer/
+└── utils/redux/
+    └── index.ts             # combineUseCasesWithExtraReducers, …
 ```
 
-### Estrutura de uma Feature
-Quando você cria uma nova feature, a CLI gera:
-```
-src/redux-store/features/<nome-da-feature>/
-├── actions.ts      # Ações da feature
-├── reducer.ts      # Reducer da feature
-├── selectors.ts    # Selectors da feature
-└── types.ts        # Tipos TypeScript da feature
-```
+## Desenvolvimento
 
-## 📁 Estrutura de pastas do projeto gerado
-
-```
-src
-├── @types
-│   └── redux.d.ts
-├── store-redux
-│   ├── hooks
-│   │   └── index.ts
-│   ├── features
-│   │   ├── theme
-│   │   │   ├── theme-slice.ts
-│   │   │   ├── theme.module.ts
-│   │   │   ├── use-cases
-│   │   │   │    ├ index.ts
-│   │   │   │    ├ init.usecases.ts
-│   │   │   │    ├ save.usecases.ts
-│   │   │   │    ...
-│   │   │   └── reducer
-│   │   │       ├── theme-extra-reducer.ts
-│   │   │       └── theme-reducer.ts
-│   │
-│   ├── root-reducer.ts
-│   └── store.ts
-└── utils
-    └── redux
-        └── index.ts
+```bash
+yarn install
+yarn dev -- --init           # roda a CLI direto do fonte via tsx
+yarn test                    # roda a suíte Jest
+yarn test:watch
 ```
 
-## 📁 Estrutura do Projeto
+A suíte cobre:
 
-```
-src/
-├── @types/           # Definições de tipos TypeScript
-├── redux-store/      # Configuração do Redux store
-│   ├── features/     # Implementações individuais de features
-│   ├── hooks/        # Hooks personalizados do Redux
-│   ├── root-reducer.ts
-│   └── store.ts
-├── use-cases/        # Implementações da funcionalidade principal
-└── utils/            # Funções utilitárias
-```
+- **Templates** (`src/__tests__/templates.test.ts`) — cada gerador ts-morph é testado isoladamente com `Project({ useInMemoryFileSystem: true })`, validando imports, classes e tipos do AST gerado.
+- **Integração** (`feature.test.ts`, `init.test.ts`) — criam um projeto sandbox em `os.tmpdir()`, rodam os comandos de verdade e conferem os arquivos produzidos.
+- **CLI** (`main.test.ts`) — valida o dispatch dos flags do `commander` para os use-cases.
 
-## 🔧 Desenvolvimento
+Para contribuir:
 
-Para contribuir com este projeto:
+1. Fork + branch a partir de `main`.
+2. `yarn test` precisa passar.
+3. Abra um PR descrevendo o comportamento adicionado/alterado.
 
-1. Clone o repositório
-2. Instale as dependências:
-   ```bash
-   npm install
-   ```
-3. Faça suas alterações
-4. Envie um pull request
+## Licença
 
-## 📝 Licença
-
-Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para detalhes.
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para enviar um Pull Request.
+MIT.

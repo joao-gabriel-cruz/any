@@ -11,8 +11,6 @@ const project = new Project({
   tsConfigFilePath: "tsconfig.json",
 });
 
-
-
 export const createCombine = (combineRoot: string) => {
 
   fs.mkdirSync(`src/redux-store/features/${combineRoot}`, { recursive: true });
@@ -67,7 +65,6 @@ export const createCombine = (combineRoot: string) => {
 export const createCombineAndFeature = (name: string, combineRoot: string) => {
 
   const upName = name.charAt(0).toUpperCase() + name.slice(1);
-  // const upCombineRoot = combineRoot.charAt(0).toUpperCase() + combineRoot.slice(1);
   const existCombine = fs.existsSync(`src/redux-store/features/${combineRoot}`);
   const existFeature = fs.existsSync(`src/redux-store/features/${combineRoot}/${name}`);
 
@@ -81,19 +78,17 @@ export const createCombineAndFeature = (name: string, combineRoot: string) => {
     createCombine(combineRoot);
   }
 
-  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}/use-cases`, { recursive: true });
-  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}/reducer`, { recursive: true });
-  fs.mkdirSync(`src/redux-store/features/${combineRoot}/${name}`, { recursive: true });
+  const base = `src/redux-store/features/${combineRoot}/${name}`;
 
-  fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/${name}.slice.ts`, templateSlice(upName, true));
-  fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/${name}.module.ts`, templateFeatureModule(upName, true));
+  templateSlice(project, `${base}/${name}.slice.ts`, upName, true);
+  templateFeatureModule(project, `${base}/${name}.module.ts`, upName, true);
 
-  fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/use-cases/index.ts`, templateIndexUseCase(upName, true));
-  fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/use-cases/init.usecases.ts`, templateCreateUseCase("Init", upName, true));
-  fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/use-cases/save.usecases.ts`, templateCreateUseCase("Save", upName, true));
+  templateIndexUseCase(project, `${base}/use-cases/index.ts`, upName, true);
+  templateCreateUseCase(project, `${base}/use-cases/init.usecases.ts`, "Init", upName, true);
+  templateCreateUseCase(project, `${base}/use-cases/save.usecases.ts`, "Save", upName, true);
 
-  fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/reducer/${name}-extra.reducer.ts`, templateExtraReducer(upName, true));
-  fs.writeFileSync(`src/redux-store/features/${combineRoot}/${name}/reducer/${name}.reducer.ts`, templateReducer(upName, true));
+  templateExtraReducer(project, `${base}/reducer/${name}-extra.reducer.ts`, upName, true);
+  templateReducer(project, `${base}/reducer/${name}.reducer.ts`, upName, true);
 
   const rootReducerFiles = project.addSourceFileAtPath("src/redux-store/root-reducer.ts");
 
@@ -130,9 +125,7 @@ export const createCombineAndFeature = (name: string, combineRoot: string) => {
 
   objectLiteralCombine.addArgument(`${name}Slice`);
 
-  combineSliceFiles.saveSync();
-
-  rootReducerFiles.saveSync();
+  project.saveSync();
 
 }
 
@@ -146,19 +139,18 @@ export const createFeature = (name: string) => {
   }
 
   console.log(`Creating feature ${name}`);
-  fs.mkdirSync(`src/redux-store/features/${name}/use-cases`, { recursive: true });
-  fs.mkdirSync(`src/redux-store/features/${name}/reducer`, { recursive: true });
-  fs.mkdirSync(`src/redux-store/features/${name}`, { recursive: true });
 
-  fs.writeFileSync(`src/redux-store/features/${name}/${name}.slice.ts`, templateSlice(upName));
-  fs.writeFileSync(`src/redux-store/features/${name}/${name}.module.ts`, templateFeatureModule(upName));
+  const base = `src/redux-store/features/${name}`;
 
-  fs.writeFileSync(`src/redux-store/features/${name}/use-cases/index.ts`, templateIndexUseCase(upName));
-  fs.writeFileSync(`src/redux-store/features/${name}/use-cases/init.usecases.ts`, templateCreateUseCase("Init", upName));
-  fs.writeFileSync(`src/redux-store/features/${name}/use-cases/save.usecases.ts`, templateCreateUseCase("Save", upName));
+  templateSlice(project, `${base}/${name}.slice.ts`, upName);
+  templateFeatureModule(project, `${base}/${name}.module.ts`, upName);
 
-  fs.writeFileSync(`src/redux-store/features/${name}/reducer/${name}-extra.reducer.ts`, templateExtraReducer(upName));
-  fs.writeFileSync(`src/redux-store/features/${name}/reducer/${name}.reducer.ts`, templateReducer(upName));
+  templateIndexUseCase(project, `${base}/use-cases/index.ts`, upName);
+  templateCreateUseCase(project, `${base}/use-cases/init.usecases.ts`, "Init", upName);
+  templateCreateUseCase(project, `${base}/use-cases/save.usecases.ts`, "Save", upName);
+
+  templateExtraReducer(project, `${base}/reducer/${name}-extra.reducer.ts`, upName);
+  templateReducer(project, `${base}/reducer/${name}.reducer.ts`, upName);
 
   const sourceFiles = project.addSourceFileAtPath("src/redux-store/root-reducer.ts");
 
@@ -176,6 +168,6 @@ export const createFeature = (name: string) => {
     initializer: `${name}Slice.reducer`
   })
 
-  sourceFiles.saveSync();
+  project.saveSync();
 
 }

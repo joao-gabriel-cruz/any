@@ -1,106 +1,145 @@
-import * as fs from 'fs';
-import { Project } from 'ts-morph';
-import { createFeature, createCombine, createCombineAndFeature } from '../use-cases/feature';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createSandbox } from './helpers/sandbox';
 
-// Mock dos módulos
-jest.mock('fs');
-jest.mock('ts-morph');
+type FeatureModule = typeof import('../use-cases/feature');
 
-describe('Feature Module', () => {
+const TSCONFIG = JSON.stringify({
+  compilerOptions: {
+    target: 'es2020',
+    module: 'commonjs',
+    strict: true,
+    esModuleInterop: true,
+    baseUrl: '.',
+    paths: { '@/*': ['src/*'] },
+  },
+  include: ['src/**/*'],
+});
+
+const ROOT_REDUCER_SOURCE = `import { combineReducers } from "@reduxjs/toolkit";
+
+const propsCombineReducer = {};
+
+const rootReducer = combineReducers(propsCombineReducer);
+
+export { rootReducer };
+`;
+
+const setupSandbox = (testName: string): string => {
+  const tmp = createSandbox('feature', testName);
+  fs.writeFileSync(path.join(tmp, 'tsconfig.json'), TSCONFIG);
+  fs.mkdirSync(path.join(tmp, 'src/redux-store'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, 'src/redux-store/root-reducer.ts'), ROOT_REDUCER_SOURCE);
+  return tmp;
+};
+
+const loadFeature = (): FeatureModule => {
+  let mod!: FeatureModule;
+  jest.isolateModules(() => {
+    mod = require('../use-cases/feature');
+  });
+  return mod;
+};
+
+describe('feature use-cases (integration)', () => {
+  let tmp: string;
+  let originalCwd: string;
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    originalCwd = process.cwd();
+    tmp = setupSandbox(expect.getState().currentTestName ?? 'unknown');
+    process.chdir(tmp);
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
   });
 
   describe('createFeature', () => {
-    it('should create a new feature with all necessary files and directories', () => {
-      const featureName = 'testFeature';
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
-      (fs.mkdirSync as jest.Mock).mockImplementation(() => {});
-      (fs.writeFileSync as jest.Mock).mockImplementation(() => {});
+    it('creates all files and wires the slice into root-reducer', () => {
+      const { createFeature } = loadFeature();
 
-      createFeature(featureName);
+      createFeature('profile');
 
-      // Verifica se os diretórios foram criados
-      expect(fs.mkdirSync).toHaveBeenCalledWith(`src/redux-store/features/${featureName}/use-cases`, { recursive: true });
-      expect(fs.mkdirSync).toHaveBeenCalledWith(`src/redux-store/features/${featureName}/reducer`, { recursive: true });
-      expect(fs.mkdirSync).toHaveBeenCalledWith(`src/redux-store/features/${featureName}`, { recursive: true });
+      const base = path.join(tmp, 'src/redux-store/features/profile');
+      expect(fs.existsSync(path.join(base, 'profile.slice.ts'))).toBe(true);
+      expect(fs.existsSync(path.join(base, 'profile.module.ts'))).toBe(true);
+      expect(fs.existsSync(path.join(base, 'use-cases/index.ts'))).toBe(true);
+      expect(fs.existsSync(path.join(base, 'use-cases/init.usecases.ts'))).toBe(true);
+      expect(fs.existsSync(path.join(base, 'use-cases/save.usecases.ts'))).toBe(true);
+      expect(fs.existsSync(path.join(base, 'reducer/profile-extra.reducer.ts'))).toBe(true);
+      expect(fs.existsSync(path.join(base, 'reducer/profile.reducer.ts'))).toBe(true);
 
-      // Verifica se os arquivos foram criados
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        `src/redux-store/features/${featureName}/${featureName}.slice.ts`,
-        expect.any(String)
-      );
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        `src/redux-store/features/${featureName}/${featureName}.module.ts`,
-        expect.any(String)
-      );
+      const slice = fs.readFileSync(path.join(base, 'profile.slice.ts'), 'utf-8');
+      expect(slice).toContain('export type StateProfile');
+      expect(slice).toContain('setProfile, rollbackProfile');
+
+      const root = fs.readFileSync(path.join(tmp, 'src/redux-store/root-reducer.ts'), 'utf-8');
+      expect(root).toContain('from "@/features/profile/profile.slice"');
+      expect(root).toContain('profile: profileSlice.reducer');
     });
 
-    it('should not create feature if it already exists', () => {
-      const featureName = 'existingFeature';
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      const consoleSpy = jest.spyOn(console, 'error');
+    it('does nothing when the feature already exists', () => {
+      const { createFeature } = loadFeature();
+      const existing = path.join(tmp, 'src/redux-store/features/already');
+      fs.mkdirSync(existing, { recursive: true });
+      const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-      createFeature(featureName);
+      createFeature('already');
 
-      expect(consoleSpy).toHaveBeenCalledWith(`Feature ${featureName} already exists`);
-      expect(fs.mkdirSync).not.toHaveBeenCalled();
+      expect(errSpy).toHaveBeenCalledWith('Feature already already exists');
+      expect(fs.existsSync(path.join(existing, 'already.slice.ts'))).toBe(false);
+      errSpy.mockRestore();
     });
   });
 
   describe('createCombine', () => {
-    it('should create a new combine with all necessary files', () => {
-      const combineName = 'testCombine';
-      (fs.mkdirSync as jest.Mock).mockImplementation(() => {});
-      (fs.writeFileSync as jest.Mock).mockImplementation(() => {});
+    it('creates the combine slice file and registers it in root-reducer', () => {
+      const { createCombine } = loadFeature();
 
-      createCombine(combineName);
+      createCombine('domain');
 
-      expect(fs.mkdirSync).toHaveBeenCalledWith(`src/redux-store/features/${combineName}`, { recursive: true });
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        `src/redux-store/features/${combineName}/${combineName}.slice.ts`,
-        ""
-      );
+      const combineFile = path.join(tmp, 'src/redux-store/features/domain/domain.slice.ts');
+      expect(fs.existsSync(combineFile)).toBe(true);
+
+      const content = fs.readFileSync(combineFile, 'utf-8');
+      expect(content).toContain('import { combineSlices } from "@reduxjs/toolkit"');
+      expect(content).toContain('export const domainSlice = combineSlices()');
     });
   });
 
   describe('createCombineAndFeature', () => {
-    it('should create both combine and feature when neither exists', () => {
-      const featureName = 'testFeature';
-      const combineName = 'testCombine';
-      (fs.existsSync as jest.Mock).mockImplementation((path) => {
-        if (path.includes(combineName)) return false;
-        if (path.includes(featureName)) return false;
-        return false;
-      });
-      (fs.mkdirSync as jest.Mock).mockImplementation(() => {});
-      (fs.writeFileSync as jest.Mock).mockImplementation(() => {});
+    it('creates the combine, the feature files and wires both', () => {
+      const { createCombineAndFeature } = loadFeature();
 
-      createCombineAndFeature(featureName, combineName);
+      createCombineAndFeature('profile', 'domain');
 
-      // Verifica se o combine foi criado
-      expect(fs.mkdirSync).toHaveBeenCalledWith(`src/redux-store/features/${combineName}`, { recursive: true });
-      
-      // Verifica se a feature foi criada
-      expect(fs.mkdirSync).toHaveBeenCalledWith(
-        `src/redux-store/features/${combineName}/${featureName}/use-cases`,
-        { recursive: true }
+      const base = path.join(tmp, 'src/redux-store/features/domain/profile');
+      expect(fs.existsSync(path.join(base, 'profile.slice.ts'))).toBe(true);
+      expect(fs.existsSync(path.join(base, 'profile.module.ts'))).toBe(true);
+
+      const combineFile = fs.readFileSync(
+        path.join(tmp, 'src/redux-store/features/domain/domain.slice.ts'),
+        'utf-8',
       );
+      expect(combineFile).toContain('import { profileSlice } from "./profile/profile.slice"');
+      expect(combineFile).toContain('combineSlices(profileSlice)');
+
+      const root = fs.readFileSync(path.join(tmp, 'src/redux-store/root-reducer.ts'), 'utf-8');
+      expect(root).toContain('domain: domainSlice');
     });
 
-    it('should not create feature if it already exists in the combine', () => {
-      const featureName = 'existingFeature';
-      const combineName = 'testCombine';
-      (fs.existsSync as jest.Mock).mockImplementation((path) => {
-        if (path.includes(featureName)) return true;
-        return false;
-      });
-      const consoleSpy = jest.spyOn(console, 'error');
+    it('refuses to create the feature when it already exists in the combine', () => {
+      const { createCombineAndFeature } = loadFeature();
+      const target = path.join(tmp, 'src/redux-store/features/domain/profile');
+      fs.mkdirSync(target, { recursive: true });
+      const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-      createCombineAndFeature(featureName, combineName);
+      createCombineAndFeature('profile', 'domain');
 
-      expect(consoleSpy).toHaveBeenCalledWith(`Feature ${featureName} already exists in ${combineName}`);
-      expect(fs.mkdirSync).not.toHaveBeenCalled();
+      expect(errSpy).toHaveBeenCalledWith('Feature profile already exists in domain');
+      expect(fs.existsSync(path.join(target, 'profile.slice.ts'))).toBe(false);
+      errSpy.mockRestore();
     });
   });
-}); 
+});

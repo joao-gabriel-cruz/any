@@ -1,36 +1,98 @@
-export const templateFeatureModule = (name: string, combine?: boolean) => {
-  const pathType = combine ? "../../../../@types/redux/redux" : "../../../@types/redux/redux"
-  const pathUtil = combine ? "../../../../utils/redux/redux" : "../../../utils/redux/redux"
+import { Project, StructureKind, VariableDeclarationKind } from "ts-morph";
 
-  return `
-import { ReduxModule } from "${pathType}";
-import { Save${name}UseCases } from "./use-cases/save.usecases";
-import { Init${name}UseCases } from "../${name.toLocaleLowerCase()}/use-cases/init.usecases";
-import { combineUseCasesWithExtraReducers } from "${pathUtil}";
-import { ${name}ExtraReducers } from "./reducer/${name.toLocaleLowerCase()}-extra.reducer";
+export const templateFeatureModule = (
+  project: Project,
+  filePath: string,
+  name: string,
+  combine?: boolean,
+) => {
+  const lower = name.toLocaleLowerCase();
+  const pathType = combine
+    ? "../../../../@types/redux/redux"
+    : "../../../@types/redux/redux";
+  const pathUtil = combine
+    ? "../../../../utils/redux/redux"
+    : "../../../utils/redux/redux";
 
-export const init${name} = ${name}ExtraReducers.init;
-export const save${name} = ${name}ExtraReducers.save;
-
-const init = combineUseCasesWithExtraReducers({
-  useCase: new Init${name}UseCases(),
-  extraReducers: init${name},
-});
-
-const save = combineUseCasesWithExtraReducers({
-  useCase: new Save${name}UseCases(),
-  extraReducers: save${name},
-});
-
-export const ${name}Module: ReduxModule<any> = (builder) => {
-  builder.addCase(init.fulfilled.extra, init.fulfilled.useCase);
-  builder.addCase(init.pending.extra, init.pending.useCase);
-  builder.addCase(init.rejected.extra, init.rejected.useCase);
-
-  builder.addCase(save.fulfilled.extra, save.fulfilled.useCase);
-  builder.addCase(save.pending.extra, save.pending.useCase);
-  builder.addCase(save.rejected.extra, save.rejected.useCase);
-};
-
-` 
+  return project.createSourceFile(
+    filePath,
+    {
+      statements: [
+        {
+          kind: StructureKind.ImportDeclaration,
+          moduleSpecifier: pathType,
+          namedImports: ["ReduxModule"],
+        },
+        {
+          kind: StructureKind.ImportDeclaration,
+          moduleSpecifier: "./use-cases/save.usecases",
+          namedImports: [`Save${name}UseCases`],
+        },
+        {
+          kind: StructureKind.ImportDeclaration,
+          moduleSpecifier: `../${lower}/use-cases/init.usecases`,
+          namedImports: [`Init${name}UseCases`],
+        },
+        {
+          kind: StructureKind.ImportDeclaration,
+          moduleSpecifier: pathUtil,
+          namedImports: ["combineUseCasesWithExtraReducers"],
+        },
+        {
+          kind: StructureKind.ImportDeclaration,
+          moduleSpecifier: `./reducer/${lower}-extra.reducer`,
+          namedImports: [`${name}ExtraReducers`],
+        },
+        {
+          kind: StructureKind.VariableStatement,
+          isExported: true,
+          declarationKind: VariableDeclarationKind.Const,
+          declarations: [
+            { name: `init${name}`, initializer: `${name}ExtraReducers.init` },
+          ],
+        },
+        {
+          kind: StructureKind.VariableStatement,
+          isExported: true,
+          declarationKind: VariableDeclarationKind.Const,
+          declarations: [
+            { name: `save${name}`, initializer: `${name}ExtraReducers.save` },
+          ],
+        },
+        {
+          kind: StructureKind.VariableStatement,
+          declarationKind: VariableDeclarationKind.Const,
+          declarations: [
+            {
+              name: "init",
+              initializer: `combineUseCasesWithExtraReducers({\n  useCase: new Init${name}UseCases(),\n  extraReducers: init${name},\n})`,
+            },
+          ],
+        },
+        {
+          kind: StructureKind.VariableStatement,
+          declarationKind: VariableDeclarationKind.Const,
+          declarations: [
+            {
+              name: "save",
+              initializer: `combineUseCasesWithExtraReducers({\n  useCase: new Save${name}UseCases(),\n  extraReducers: save${name},\n})`,
+            },
+          ],
+        },
+        {
+          kind: StructureKind.VariableStatement,
+          isExported: true,
+          declarationKind: VariableDeclarationKind.Const,
+          declarations: [
+            {
+              name: `${name}Module`,
+              type: "ReduxModule<any>",
+              initializer: `(builder) => {\n  builder.addCase(init.fulfilled.extra, init.fulfilled.useCase);\n  builder.addCase(init.pending.extra, init.pending.useCase);\n  builder.addCase(init.rejected.extra, init.rejected.useCase);\n\n  builder.addCase(save.fulfilled.extra, save.fulfilled.useCase);\n  builder.addCase(save.pending.extra, save.pending.useCase);\n  builder.addCase(save.rejected.extra, save.rejected.useCase);\n}`,
+            },
+          ],
+        },
+      ],
+    },
+    { overwrite: true },
+  );
 };

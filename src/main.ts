@@ -4,6 +4,7 @@ import {  createCombine, createCombineAndFeature, createFeature } from "./use-ca
 import { initStore } from "./use-cases/init"
 import fs from "fs"
 import { getVersion } from "./use-cases/configs"
+import { createThunk } from "./use-cases/thunk"
 
 export function main() {
   const program = new Command()
@@ -12,6 +13,7 @@ export function main() {
     .option("-f, --feature <feature>", "new feature")
     .option("-i, --init", "init project")
     .option("-c, --combine <combine>", "combine feature")
+    .option("-t, --thunk <thunk>", "new thunk in feature")
     .option("-v, --version ", "version project") 
     .parse(process.argv)
 
@@ -19,6 +21,16 @@ export function main() {
 
   if (options.init) {
     initStore()
+    return;
+  }
+
+  if (options.thunk) {
+    if (!options.feature) {
+      console.error(`Feature is required to create a thunk`);
+      return;
+    }
+
+    createThunk(options.thunk, options.feature, options.combine)
     return;
   }
 
@@ -68,4 +80,6 @@ export function main() {
 
 
 
-main()
+if (require.main === module) {
+  main()
+}
